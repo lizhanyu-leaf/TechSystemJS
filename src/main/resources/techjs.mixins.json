@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.leaf.techjs.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "techjs.refmap.json",
+  "mixinextras": {
+    "minVersion": "0.5.2"
+  },
+  "mixins": [
+    "RecipeManagerAccessor",
+    "RecipesEventJSMixin",
+    "ReloadableServerResourcesAccessor"
+  ],
+  "client": [
+    "StartEventObserverMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

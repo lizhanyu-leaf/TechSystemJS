@@ -1,0 +1,35 @@
+{
+  "techjs.command.reload_storage.not_ready": "Tech storage not ready",
+  "techjs.command.reload_storage.success": "Tech storage reloaded",
+  "techjs.command.reload_storage.hint_apply": "Tip: run /techjs apply to apply changes",
+
+  "techjs.command.tech_not_found": "Specified tech not found",
+
+  "techjs.command.already_unlocked": "Technology [%s] is already unlocked",
+  "techjs.command.unlocked": "Unlocked: %s",
+
+  "techjs.command.lock_added_hint": "Added and set as locked: %s",
+  "techjs.command.already_locked": "Technology [%s] is already locked",
+  "techjs.command.locked": "Locked: %s",
+
+  "techjs.command.added": "Added: %s",
+  "techjs.command.exists": "Technology already exists: %s",
+
+  "techjs.command.list.none": "No unlocked technologies",
+  "techjs.command.list.header": "Unlocked technologies (%d):",
+  "techjs.command.list.item": " - %s",
+  "techjs.command.list.note": "Note: technologies that haven't been operated on are not stored and won't appear here",
+
+  "techjs.command.apply.no_changes": "No pending tech changes to apply",
+  "techjs.command.apply.success": "Tech changes applied — reloading recipes and firing onTechLoad",
+  "techjs.command.apply.fail": "Apply failed: %s",
+
+  "techjs.command.help.title": "TechJS Commands",
+  "techjs.command.help.list": "/techjs list - List unlocked technologies (only shows operated/enabled ones)",
+  "techjs.command.help.lock": "/techjs lock <id> - Lock a tech; if it doesn't exist it will be added as locked",
+  "techjs.command.help.unlock": "/techjs unlock <id> - Unlock a tech",
+  "techjs.command.help.add_tech": "/techjs add_tech <id> - Explicitly add a tech (equivalent to setting it locked)",
+  "techjs.command.help.reload_storage": "/techjs reload_storage - Reload tech_system.json from save",
+  "techjs.command.help.apply": "/techjs apply - If there are changes, reload recipes and trigger onTechLoad",
+  "techjs.command.help.note": "Tip: technologies not operated on aren't automatically stored; only lock/unlock/add_tech save them"
+}
