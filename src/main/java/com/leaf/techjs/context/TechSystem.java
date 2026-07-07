@@ -2,6 +2,7 @@ package com.leaf.techjs.context;
 
 import com.leaf.techjs.AllConfig;
 import com.leaf.techjs.AllPackets;
+import com.leaf.techjs.TechSystemJS;
 import com.leaf.techjs.jei.RestartJEIPacket;
 import com.leaf.techjs.kubejs.TechSystemEvents;
 import com.leaf.techjs.kubejs.event.TechSystemRecipesEventJS;
@@ -58,6 +59,7 @@ public final class TechSystem {
      * @param server 服务器实例
      */
     public static void apply(MinecraftServer server) {
+        if (!TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners()) return;
         if (shouldApply)
             RESTART_DELAY.start(server);
         setDirty(false);
@@ -72,12 +74,13 @@ public final class TechSystem {
         private final long delayMillis;
 
         private static void task(MinecraftServer server) {
-            if (TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners())
-                createTechnologyRecipesEvent().post(server.getRecipeManager());
+            TechSystemJS.LOGGER.info("TechSystemJS : TechSystem applied");
+            createTechnologyRecipesEvent().post(server.getRecipeManager());
             // 发送更新配方包
             var recipePacket = new ClientboundUpdateRecipesPacket(server.getRecipeManager().getRecipes());
             var restartPacket = new RestartJEIPacket();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                TechSystemJS.LOGGER.info("TechSystemJS : Send recipes to {}", player.toString());
                 player.connection.send(recipePacket);
                 AllPackets.getChannel().send(PacketDistributor.PLAYER.with(()->player), restartPacket);
             }

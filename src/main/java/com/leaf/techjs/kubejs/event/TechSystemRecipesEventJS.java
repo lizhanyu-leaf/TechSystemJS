@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class TechSystemRecipesEventJS extends RecipesEventJS {
     private static Map<ResourceLocation, JsonElement> datapackRecipeMap;
     private static Map<ResourceLocation, RecipeJS> originalRecipesCache;
-    private boolean shouldDatapackUpdate = false;
+    private static boolean shouldDatapackUpdate = false;
 
     // 需要用到的父类的 private 字段
 

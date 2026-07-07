@@ -4,6 +4,7 @@ import com.leaf.techjs.commands.TechArgumentType;
 import com.leaf.techjs.context.TechInfo;
 import com.leaf.techjs.context.TechSystem;
 import com.leaf.techjs.context.TechSystemStorage;
+import com.leaf.techjs.kubejs.TechSystemEvents;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -104,6 +105,12 @@ public final class AllCommands {
                                                                 if (!TechSystem.needsApply()) {
                                                                     if (AllConfig.enableCommandsTips) {
                                                                                                                                         src.sendSuccess(() -> Component.translatable("techjs.command.apply.no_changes").withStyle(ChatFormatting.YELLOW), true);
+                                                                    }
+                                                                    return 0;
+                                                                }
+                                                                if (!TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners()) {
+                                                                    if (AllConfig.enableCommandsTips) {
+                                                                        src.sendSuccess(() -> Component.translatable("techjs.command.apply.no_listener").withStyle(ChatFormatting.YELLOW), true);
                                                                     }
                                                                     return 0;
                                                                 }

@@ -1,5 +1,6 @@
 package com.leaf.techjs.mixin;
 
+import com.leaf.techjs.TechSystemJS;
 import com.leaf.techjs.jei.JEIRestarter;
 import mezz.jei.forge.events.PermanentEventSubscriptions;
 import mezz.jei.forge.startup.StartEventObserver;
@@ -15,6 +16,7 @@ public abstract class StartEventObserverMixin {
 
     @Inject(method = "register", at = @At("HEAD"), remap = false)
     public void onRegister(PermanentEventSubscriptions subscriptions, CallbackInfo ci) {
+        TechSystemJS.LOGGER.info("TechSystemJS : Got JEI restart method");
         JEIRestarter.JEI_RESTART = this::restart;
     }
 }

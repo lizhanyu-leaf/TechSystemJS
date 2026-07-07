@@ -21,6 +21,7 @@
   "techjs.command.list.note": "Note: technologies that haven't been operated on are not stored and won't appear here",
 
   "techjs.command.apply.no_changes": "No pending tech changes to apply",
+  "techjs.command.apply.no_listener": "No listener",
   "techjs.command.apply.success": "Tech changes applied — reloading recipes and firing onTechLoad",
   "techjs.command.apply.fail": "Apply failed: %s",
 

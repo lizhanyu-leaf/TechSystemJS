@@ -119,8 +119,8 @@ public final class TechSystemStorage {
     }
 
     public void setActive(TechInfo techInfo, boolean active) {
-        technologies.put(techInfo, active);
         if (technologies.getOrDefault(techInfo, false) == active) return;
+        technologies.put(techInfo, active);
         TechSystem.setDirty();
         save(); // 立即保存
     }

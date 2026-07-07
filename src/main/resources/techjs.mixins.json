@@ -9,7 +9,7 @@
   },
   "mixins": [
     "RecipeManagerAccessor",
-    "RecipesEventJSMixin",
+    "RecipeManagerMixin",
     "ReloadableServerResourcesAccessor"
   ],
   "client": [

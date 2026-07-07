@@ -21,6 +21,7 @@
   "techjs.command.list.note": "注：未经过操作的科技不会自动写入存储，因此不会显示在此列表中",
 
   "techjs.command.apply.no_changes": "当前无未应用的科技变更",
+  "techjs.command.apply.no_listener": "科技系统无监听",
   "techjs.command.apply.success": "科技系统变更已应用，正在重载配方并触发 onTechLoad 监听",
   "techjs.command.apply.fail": "应用失败: %s",
 

@@ -18,6 +18,7 @@ public class TechSystemJS {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         AllArgumentTypeInfos.register(modEventBus);
+        AllPackets.registerPackets();
 
         FMLJavaModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, AllConfig.SPEC);
     }
