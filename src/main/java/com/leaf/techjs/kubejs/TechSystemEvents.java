@@ -22,6 +22,6 @@ public interface TechSystemEvents {
         return TechInfo.EMPTY;
     }
 
-    EventHandler ON_TECHNOLOGY_LOAD
+    EventHandler ON_TECH_LOAD
             = GROUP.server("onTechLoad", () -> TechSystemRecipesEventJS.class).extra(SUPPORTS_TECHNOLOGY);
 }

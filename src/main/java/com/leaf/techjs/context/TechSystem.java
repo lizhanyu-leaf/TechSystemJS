@@ -59,7 +59,7 @@ public final class TechSystem {
      * @param server 服务器实例
      */
     public static void apply(MinecraftServer server) {
-        if (!TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners()) return;
+        if (!TechSystemEvents.ON_TECH_LOAD.hasListeners()) return;
         if (shouldApply)
             RESTART_DELAY.start(server);
         setDirty(false);

@@ -1,8 +1,7 @@
 package com.leaf.techjs.context;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.leaf.techjs.TechSystemJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -13,8 +12,9 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static com.leaf.techjs.TechSystemJS.GSON;
+
 public final class TechSystemStorage {
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILE_NAME = "tech_system.json";
 
     private final Map<TechInfo, Boolean> technologies = new HashMap<>();
@@ -86,7 +86,7 @@ public final class TechSystemStorage {
                 }
             }
         } catch (IOException e) {
-            System.err.println("[TechnologyStorage] 加载失败: " + e.getMessage());
+            TechSystemJS.LOGGER.error("[TechnologyStorage] : 加载失败: {}", e.getMessage());
         }
     }
 
@@ -97,7 +97,7 @@ public final class TechSystemStorage {
                 GSON.toJson(technologies, writer);
             }
         } catch (IOException e) {
-            System.err.println("[TechnologyStorage] 保存失败: " + e.getMessage());
+            TechSystemJS.LOGGER.error("[TechnologyStorage] : 保存失败: {}", e.getMessage());
         }
     }
 

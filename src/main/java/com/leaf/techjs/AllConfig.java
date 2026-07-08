@@ -1,10 +1,14 @@
 package com.leaf.techjs;
 
 import com.leaf.techjs.context.TechSystem;
+import com.leaf.techjs.context.items.TechItemInfo;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = TechSystemJS.MOD_ID)
 public final class AllConfig {

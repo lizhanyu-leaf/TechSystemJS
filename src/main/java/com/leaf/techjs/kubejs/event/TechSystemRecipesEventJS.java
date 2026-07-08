@@ -192,9 +192,9 @@ public class TechSystemRecipesEventJS extends RecipesEventJS {
         if (TechSystemStorage.getInstance() != null) {
             for (var techInfo : TechSystemStorage.getInstance().getAllActive()) {
                 // 判断是否有监听，如果没有监听则跳过
-                if (!TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners(techInfo)) continue;
+                if (!TechSystemEvents.ON_TECH_LOAD.hasListeners(techInfo)) continue;
                 // 核心逻辑，post 用于触发JS代码，加载JS配方
-                TechSystemEvents.ON_TECHNOLOGY_LOAD
+                TechSystemEvents.ON_TECH_LOAD
                         .post(ScriptType.SERVER, techInfo, this);
             }
         }

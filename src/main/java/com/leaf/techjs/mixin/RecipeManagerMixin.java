@@ -22,7 +22,7 @@ public class RecipeManagerMixin {
     @Inject(method = "apply*", at = @At("HEAD"))
     private void customRecipesHead(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager,
                                    ProfilerFiller profiler, CallbackInfo ci) {
-        if (TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners()) {
+        if (TechSystemEvents.ON_TECH_LOAD.hasListeners()) {
             TechSystemJS.LOGGER.info("TechSystemJS : TechSystem Loaded");
             TechSystemRecipesEventJS event = TechSystem.createTechnologyRecipesEvent();
             event.setDatapackRecipeMap(map);

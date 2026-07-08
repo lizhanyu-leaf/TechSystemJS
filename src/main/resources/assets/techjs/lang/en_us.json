@@ -32,5 +32,7 @@
   "techjs.command.help.add_tech": "/techjs add_tech <id> - Explicitly add a tech (equivalent to setting it locked)",
   "techjs.command.help.reload_storage": "/techjs reload_storage - Reload tech_system.json from save",
   "techjs.command.help.apply": "/techjs apply - If there are changes, reload recipes and trigger onTechLoad",
-  "techjs.command.help.note": "Tip: technologies not operated on aren't automatically stored; only lock/unlock/add_tech save them"
+  "techjs.command.help.note": "Tip: technologies not operated on aren't automatically stored; only lock/unlock/add_tech save them",
+
+  "item.techjs.tech_item_icon": "Tech Item Icon"
 }

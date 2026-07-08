@@ -108,7 +108,7 @@ public final class AllCommands {
                                                                     }
                                                                     return 0;
                                                                 }
-                                                                if (!TechSystemEvents.ON_TECHNOLOGY_LOAD.hasListeners()) {
+                                                                if (!TechSystemEvents.ON_TECH_LOAD.hasListeners()) {
                                                                     if (AllConfig.enableCommandsTips) {
                                                                         src.sendSuccess(() -> Component.translatable("techjs.command.apply.no_listener").withStyle(ChatFormatting.YELLOW), true);
                                                                     }
