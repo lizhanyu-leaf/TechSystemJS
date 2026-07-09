@@ -7,7 +7,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +22,7 @@ public class TechUnlockerItem extends Item {
     private Supplier<ItemStack> itemSupplier;
 
     public TechUnlockerItem(TechItemInfo info) {
-        super(new Properties().stacksTo(16));
+        super(new Properties().stacksTo(1));
         this.techId = TechInfo.of(info.getTechId());
         this.info = info;
     }
@@ -50,11 +49,7 @@ public class TechUnlockerItem extends Item {
 
             server.execute(() -> TechSystem.apply(server));
 
-            var stack = player.getItemInHand(hand);
-            stack.shrink(1);
-            if (stack.isEmpty()) {
-                player.setItemInHand(hand, ItemStack.EMPTY);
-            }
+            player.setItemInHand(hand, ItemStack.EMPTY);
 
             return InteractionResultHolder.success(player.getItemInHand(hand));
         } else {

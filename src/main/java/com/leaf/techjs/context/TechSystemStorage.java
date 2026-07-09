@@ -147,4 +147,9 @@ public final class TechSystemStorage {
     public Path getFilePath() {
         return filePath;
     }
+
+    public void addTech(TechInfo techInfo) {
+        if (technologies.containsKey(techInfo)) return;
+        technologies.put(techInfo, false);
+    }
 }

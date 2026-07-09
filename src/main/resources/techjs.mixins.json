@@ -20,5 +20,6 @@
   },
   "overwrites": {
     "requireAnnotations": true
-  }
+  },
+  "plugin": "com.leaf.techjs.mixin.TechSystemJSMixinPlugin"
 }

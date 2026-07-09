@@ -4,6 +4,7 @@ import com.leaf.techjs.context.TechInfo;
 import com.leaf.techjs.context.items.TechUnlockerItem;
 import com.leaf.techjs.context.items.TechItemInfo;
 import com.leaf.techjs.context.items.TechItemsConfig;
+import com.leaf.techjs.kubejs.event.TechSystemRegisterEventJS;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,15 +24,21 @@ public final class AllItems {
     private static final DeferredRegister<Item> ITEMS
             = DeferredRegister.create(ForgeRegistries.ITEMS, TechSystemJS.MOD_ID);
 
+    private static boolean registered = false;
     public static final Map<TechInfo, RegistryObject<Item>> TECH_ITEMS = new HashMap<>();
     public static final String TECH_ITEM_ICON_ID = "tech_item_icon";
     public static final RegistryObject<Item> TECH_ITEM_ICON = ITEMS.register(TECH_ITEM_ICON_ID, () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus bus) {
+        if (registered) return;
+        registered = true;
+
         TechItemsConfig.load();
+        TechSystemRegisterEventJS.post();
+        TechItemsConfig.reset();
 
         for (TechItemInfo itemInfo : TechItemsConfig.items) {
-            TECH_ITEMS.put(TechInfo.of(itemInfo.getTechId()), ITEMS.register(itemInfo.getId(), () -> new TechUnlockerItem(itemInfo)));
+            TECH_ITEMS.put(TechInfo.of(itemInfo.getTechId()), ITEMS.register(itemInfo.getItemIdToString(), () -> new TechUnlockerItem(itemInfo)));
         }
 
         ITEMS.register(bus);

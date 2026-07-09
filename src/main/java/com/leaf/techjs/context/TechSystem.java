@@ -2,6 +2,7 @@ package com.leaf.techjs.context;
 
 import com.leaf.techjs.AllConfig;
 import com.leaf.techjs.AllPackets;
+import com.leaf.techjs.CompatMods;
 import com.leaf.techjs.TechSystemJS;
 import com.leaf.techjs.jei.RestartJEIPacket;
 import com.leaf.techjs.kubejs.TechSystemEvents;
@@ -15,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public final class TechSystem {
     public static RestartDelay RESTART_DELAY;
@@ -78,11 +80,12 @@ public final class TechSystem {
             createTechnologyRecipesEvent().post(server.getRecipeManager());
             // 发送更新配方包
             var recipePacket = new ClientboundUpdateRecipesPacket(server.getRecipeManager().getRecipes());
-            var restartPacket = new RestartJEIPacket();
+            Supplier<AllPackets> restartPacket = () -> AllPackets.RESTART_JEI;
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 TechSystemJS.LOGGER.info("TechSystemJS : Send recipes to {}", player.toString());
                 player.connection.send(recipePacket);
-                AllPackets.getChannel().send(PacketDistributor.PLAYER.with(()->player), restartPacket);
+                if (CompatMods.JEI.isLoaded())
+                    AllPackets.getChannel().send(PacketDistributor.PLAYER.with(()->player), restartPacket.get());
             }
         }
 

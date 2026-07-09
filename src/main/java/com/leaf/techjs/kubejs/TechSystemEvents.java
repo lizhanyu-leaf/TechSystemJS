@@ -2,6 +2,7 @@ package com.leaf.techjs.kubejs;
 
 import com.leaf.techjs.context.TechInfo;
 import com.leaf.techjs.kubejs.event.TechSystemRecipesEventJS;
+import com.leaf.techjs.kubejs.event.TechSystemRegisterEventJS;
 import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.event.Extra;
@@ -24,4 +25,7 @@ public interface TechSystemEvents {
 
     EventHandler ON_TECH_LOAD
             = GROUP.server("onTechLoad", () -> TechSystemRecipesEventJS.class).extra(SUPPORTS_TECHNOLOGY);
+
+    EventHandler REGISTER_TECH
+            = GROUP.startup("registerTech", () -> TechSystemRegisterEventJS.class);
 }

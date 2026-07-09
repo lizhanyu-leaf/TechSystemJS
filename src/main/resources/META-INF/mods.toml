@@ -73,7 +73,7 @@ side="BOTH"
 # Just Enough Items
 [[dependencies."${mod_id}"]]
 modId="jei"
-mandatory=true
+mandatory=false
 versionRange="[15.20.0,)"
-ordering="AFTER"
+ordering="NONE"
 side="BOTH"
