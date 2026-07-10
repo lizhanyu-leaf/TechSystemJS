@@ -34,5 +34,6 @@
   "techjs.command.help.apply": "/techjs apply - 如果存在变更，则重载配方并触发 onTechLoad 监听",
   "techjs.command.help.note": "提示：未经过操作的科技不会自动写入存储，只有调用 lock/unlock/add_tech 时才会保存",
 
-  "item.techjs.tech_item_icon": "科技物品图标"
+  "item.techjs.tech_item_icon": "科技物品图标",
+  "itemGroup.techjs.tech_tab": "科技解锁器"
 }

@@ -34,5 +34,6 @@
   "techjs.command.help.apply": "/techjs apply - If there are changes, reload recipes and trigger onTechLoad",
   "techjs.command.help.note": "Tip: technologies not operated on aren't automatically stored; only lock/unlock/add_tech save them",
 
-  "item.techjs.tech_item_icon": "Tech Item Icon"
+  "item.techjs.tech_item_icon": "Tech Item Icon",
+  "itemGroup.techjs.tech_tab": "Tech Unlockers"
 }
