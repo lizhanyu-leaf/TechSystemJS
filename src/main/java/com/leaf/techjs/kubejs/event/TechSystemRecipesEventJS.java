@@ -9,6 +9,7 @@ import com.leaf.techjs.kubejs.TechSystemEvents;
 import com.leaf.techjs.mixin.RecipeManagerAccessor;
 import com.leaf.techjs.mixin.ReloadableServerResourcesAccessor;
 import dev.latvian.mods.kubejs.DevProperties;
+import dev.latvian.mods.kubejs.bindings.event.ServerEvents;
 import dev.latvian.mods.kubejs.core.ItemStackKJS;
 import dev.latvian.mods.kubejs.item.ingredient.TagContext;
 import dev.latvian.mods.kubejs.platform.RecipePlatformHelper;
@@ -77,7 +78,29 @@ public class TechSystemRecipesEventJS extends RecipesEventJS {
      */
     @SuppressWarnings("UnstableApiUsage")
     public void post(RecipeManager recipeManager) {
+        boolean recipesEventHasListeners = ServerEvents.RECIPES.hasListeners();
+
         ConsoleJS.SERVER.info("Processing Technology recipes...");
+
+        // 首先确保 ServerEvents.RECIPES 已经执行
+        // 如果 RecipesEventJS.instance 存在且有配方，需要合并这些配方
+        if (RecipesEventJS.instance != null && recipesEventHasListeners) {
+            ConsoleJS.SERVER.info("Merging recipes from ServerEvents.RECIPES...");
+
+            // 合并 ServerEvents.RECIPES 中的配方
+            RecipesEventJS.instance.originalRecipes.forEach((id, recipe) -> {
+                if (recipe.removed) {
+                    originalRecipes.remove(id);
+                } else {
+                    originalRecipes.put(id, recipe);
+                }
+            });
+
+            // 合并 ServerEvents.RECIPES 中添加的配方
+            addedRecipes.addAll(RecipesEventJS.instance.addedRecipes);
+
+            ConsoleJS.SERVER.info("Merged " + RecipesEventJS.instance.originalRecipes.size() + " original recipes and " + RecipesEventJS.instance.addedRecipes.size() + " added recipes from ServerEvents.RECIPES");
+        }
 
         // 设置TagContext
         TagContext.INSTANCE.setValue(TagContext.fromLoadResult(
@@ -88,7 +111,6 @@ public class TechSystemRecipesEventJS extends RecipesEventJS {
 
         var timer = Stopwatch.createStarted();
 
-        // 为datapack添加的配方进行计时
         if (shouldDatapackUpdate) {
             var exportedRecipes = new JsonObject();
 
@@ -175,15 +197,16 @@ public class TechSystemRecipesEventJS extends RecipesEventJS {
 
             ConsoleJS.SERVER.info("Found " + originalRecipes.size() + " recipes in " + timer.stop());
 
-            // 释放计时器
-            timer.reset().start();
+        // 释放计时器
+        timer.reset().start();
 
-            originalRecipesCache = originalRecipes;
-        }
-        else {
+        originalRecipesCache = originalRecipes;
+        } else {
             originalRecipes.clear();
             originalRecipes.putAll(originalRecipesCache);
         }
+
+        // 为datapack添加的配方进行计时
 
         // 调用OnTechnologyLoad事件的Listener
         // TechnologyEvents.ON_TECHNOLOGY_LOAD.post(ScriptType.SERVER, this);

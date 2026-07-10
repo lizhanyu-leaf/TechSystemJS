@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-@Mixin(value = RecipeManager.class)
+@Mixin(value = RecipeManager.class, priority = 1200)
 public class RecipeManagerMixin {
     @Inject(method = "apply*", at = @At("HEAD"))
     private void customRecipesHead(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager,
