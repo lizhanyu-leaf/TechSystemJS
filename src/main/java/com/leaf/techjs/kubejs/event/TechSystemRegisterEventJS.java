@@ -7,6 +7,7 @@ import com.leaf.techjs.context.TechSystemStorage;
 import com.leaf.techjs.context.items.TechItemInfo;
 import com.leaf.techjs.context.items.TechItemsConfig;
 import com.leaf.techjs.kubejs.TechSystemEvents;
+import dev.latvian.mods.kubejs.core.ItemKJS;
 import dev.latvian.mods.kubejs.event.StartupEventJS;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.util.ConsoleJS;
@@ -121,6 +122,13 @@ public class TechSystemRegisterEventJS extends StartupEventJS {
 
         private TechInfoBuilder(String id) {
             this.id = ResourceLocation.tryParse(id);
+        }
+
+        public TechInfoBuilder icon(ItemKJS icon) {
+            if (icon != null) {
+                this.icon = icon.kjs$getIdLocation();
+            }
+            return this;
         }
 
         public TechInfoBuilder icon(String icon) {

@@ -80,12 +80,12 @@ public final class TechSystem {
             createTechnologyRecipesEvent().post(server.getRecipeManager());
             // 发送更新配方包
             var recipePacket = new ClientboundUpdateRecipesPacket(server.getRecipeManager().getRecipes());
-            Supplier<AllPackets> restartPacket = () -> AllPackets.RESTART_JEI;
+            var restartPacket = new RestartJEIPacket();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 TechSystemJS.LOGGER.info("TechSystemJS : Send recipes to {}", player.toString());
                 player.connection.send(recipePacket);
                 if (CompatMods.JEI.isLoaded())
-                    AllPackets.getChannel().send(PacketDistributor.PLAYER.with(()->player), restartPacket.get());
+                    AllPackets.getChannel().send(PacketDistributor.PLAYER.with(()->player), restartPacket);
             }
         }
 

@@ -23,7 +23,7 @@ public class TechSystemJS {
 
         AllArgumentTypeInfos.register(modEventBus);
 
-        if (CompatMods.JEI.isLoaded()) AllPackets.registerPackets();
+        AllPackets.registerPackets();
 
         FMLJavaModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, AllConfig.SPEC);
     }
