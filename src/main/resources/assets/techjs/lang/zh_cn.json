@@ -24,6 +24,7 @@
   "techjs.command.apply.no_listener": "科技系统无监听",
   "techjs.command.apply.success": "科技系统变更已应用，正在重载配方并触发 onTechLoad 监听",
   "techjs.command.apply.fail": "应用失败: %s",
+  "techjs.command.set_dirty.fail": "修改失败，已经需要应用变更",
 
   "techjs.command.help.title": "TechJS 命令帮助",
   "techjs.command.help.list": "/techjs list - 列出已解锁的科技 (仅显示已被操作并标记为启用的)",

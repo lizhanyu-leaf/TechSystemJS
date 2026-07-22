@@ -2,7 +2,7 @@ package com.leaf.techjs;
 
 import com.leaf.techjs.commands.TechArgumentType;
 import com.leaf.techjs.context.TechInfo;
-import com.leaf.techjs.context.TechSystem;
+import com.leaf.techjs.context.TechSystemManager;
 import com.leaf.techjs.context.TechSystemStorage;
 import com.leaf.techjs.kubejs.TechSystemEvents;
 import com.mojang.brigadier.CommandDispatcher;
@@ -98,11 +98,22 @@ public final class AllCommands {
                                                                     }
                                                                     return 1;
                                                                 })))
+                        .then(Commands.literal("need_apply")
+                                        .executes(ctx -> {
+                                            if (TechSystemManager.needsApply()) {
+                                                if (AllConfig.enableCommandsTips) {
+                                                    ctx.getSource().sendSuccess(() -> Component.translatable("techjs.command.set_dirty.fail").withStyle(ChatFormatting.GRAY), false);
+                                                    return 1;
+                                                }
+                                            }
+                                            TechSystemManager.setDirty();
+                                            return 0;
+                                        }))
                         .then(Commands.literal("apply")
                                 .executes(ctx -> {
                                                             CommandSourceStack src = ctx.getSource();
                                                             try {
-                                                                if (!TechSystem.needsApply()) {
+                                                                if (!TechSystemManager.needsApply()) {
                                                                     if (AllConfig.enableCommandsTips) {
                                                                                                                                         src.sendSuccess(() -> Component.translatable("techjs.command.apply.no_changes").withStyle(ChatFormatting.YELLOW), true);
                                                                     }
@@ -114,7 +125,7 @@ public final class AllCommands {
                                                                     }
                                                                     return 0;
                                                                 }
-                                                                TechSystem.apply(src.getServer());
+                                                                TechSystemManager.apply(src.getServer());
                                                                 if (AllConfig.enableCommandsTips) {
                                                                                                                                     src.sendSuccess(() -> Component.translatable("techjs.command.apply.success").withStyle(ChatFormatting.GREEN), true);
                                                                 }

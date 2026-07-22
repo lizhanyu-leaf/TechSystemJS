@@ -20,7 +20,8 @@ public final class TechSystemStorage {
     private final Map<TechInfo, Boolean> technologies = new HashMap<>();
     private final Path filePath;
 
-    private static final Queue<Runnable> whenCreate = new LinkedList<>();
+    private static final List<Runnable> whenCreate = new ArrayList<>();
+    private static final List<Consumer<TechSystemStorage>> whenCreateWithInstance = new ArrayList<>();
 
     private static TechSystemStorage INSTANCE;
     public static MinecraftServer SERVER;
@@ -38,12 +39,12 @@ public final class TechSystemStorage {
         whenCreate.add(runnable);
     }
 
-    public static void whenCreate(Consumer<TechSystemStorage> consumer) {
-        whenCreate.add(() -> consumer.accept(INSTANCE));
-    }
-
-    public static void whenCreateWithServer(Consumer<MinecraftServer> consumer) {
-        whenCreate.add(() -> consumer.accept(SERVER));
+    public static void whenCreateWithInstance(Consumer<TechSystemStorage> consumer) {
+       if (INSTANCE != null) {
+            consumer.accept(INSTANCE);
+            return;
+        }
+        whenCreateWithInstance.add(consumer);
     }
 
     public static TechSystemStorage getOrCreateInstance(MinecraftServer server) {
@@ -54,16 +55,25 @@ public final class TechSystemStorage {
             Path worldDir = overworld.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
             INSTANCE = new TechSystemStorage(worldDir);
 
-            while  (!whenCreate.isEmpty()) {
-                Runnable runnable = whenCreate.poll();
+            for (Runnable runnable : whenCreate) {
                 runnable.run();
             }
+            for (var c : whenCreateWithInstance) {
+                c.accept(INSTANCE);
+            }
+
+            whenCreate.clear();
+            whenCreateWithInstance.clear();
         }
         return INSTANCE;
     }
 
     public static TechSystemStorage getInstance() {
         return INSTANCE;
+    }
+
+    public static boolean hasInstance() {
+        return INSTANCE != null;
     }
 
     public static void reset() {
@@ -121,7 +131,7 @@ public final class TechSystemStorage {
     public void setActive(TechInfo techInfo, boolean active) {
         if (technologies.getOrDefault(techInfo, false) == active) return;
         technologies.put(techInfo, active);
-        TechSystem.setDirty();
+        TechSystemManager.setDirty();
         save(); // 立即保存
     }
 

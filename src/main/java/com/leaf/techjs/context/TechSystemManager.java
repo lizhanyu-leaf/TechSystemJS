@@ -1,27 +1,31 @@
 package com.leaf.techjs.context;
 
+import com.google.gson.JsonElement;
 import com.leaf.techjs.AllConfig;
 import com.leaf.techjs.AllPackets;
 import com.leaf.techjs.CompatMods;
 import com.leaf.techjs.TechSystemJS;
 import com.leaf.techjs.jei.RestartJEIPacket;
 import com.leaf.techjs.kubejs.TechSystemEvents;
-import com.leaf.techjs.kubejs.event.TechSystemRecipesEventJS;
+import dev.latvian.mods.kubejs.recipe.RecipesEventJS;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraftforge.network.PacketDistributor;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
-public final class TechSystem {
+public final class TechSystemManager {
     public static RestartDelay RESTART_DELAY;
 
     private static boolean shouldApply = false;
+    private static Map<ResourceLocation, JsonElement> datapackRecipeMapCache;
 
     /**
      * 当前是否存在未应用的科技变更（由 TechSystemStorage.setActive 标记）
@@ -32,13 +36,6 @@ public final class TechSystem {
 
     public static void init() {
         RESTART_DELAY = new RestartDelay(AllConfig.restartDelay);
-    }
-
-    /**
-     * 创建科技配方JS，用于在重启时刷新 datapackRecipeMap 和 重启 TechnologyRecipesEventJS 时使用（其实也没有其他用途）
-     */
-    public static TechSystemRecipesEventJS createTechnologyRecipesEvent() {
-        return new TechSystemRecipesEventJS();
     }
 
     /**
@@ -67,6 +64,20 @@ public final class TechSystem {
         setDirty(false);
     }
 
+    public static void post(MinecraftServer server) {
+        post(server.getRecipeManager());
+    }
+
+    public static void post(RecipeManager manager) {
+        if (RecipesEventJS.instance == null) return;
+
+        RecipesEventJS.instance.post(manager, datapackRecipeMapCache);
+    }
+
+    public static void updateDatapackRecipeMapCache(Map<ResourceLocation, JsonElement> map) {
+        datapackRecipeMapCache = map;
+    }
+
     /**
      * 延迟重启JEI
      */
@@ -77,8 +88,9 @@ public final class TechSystem {
 
         private static void task(MinecraftServer server) {
             TechSystemJS.LOGGER.info("TechSystemJS : TechSystem applied");
-            createTechnologyRecipesEvent().post(server.getRecipeManager());
             // 发送更新配方包
+            RecipesEventJS.instance = new RecipesEventJS();
+            post(server);
             var recipePacket = new ClientboundUpdateRecipesPacket(server.getRecipeManager().getRecipes());
             var restartPacket = new RestartJEIPacket();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -87,6 +99,7 @@ public final class TechSystem {
                 if (CompatMods.JEI.isLoaded())
                     AllPackets.getChannel().send(PacketDistributor.PLAYER.with(()->player), restartPacket);
             }
+            RecipesEventJS.instance = null;
         }
 
         /**

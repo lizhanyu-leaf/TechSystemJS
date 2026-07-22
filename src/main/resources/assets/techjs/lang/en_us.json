@@ -24,6 +24,7 @@
   "techjs.command.apply.no_listener": "No listener",
   "techjs.command.apply.success": "Tech changes applied — reloading recipes and firing onTechLoad",
   "techjs.command.apply.fail": "Apply failed: %s",
+  "techjs.command.set_dirty.fail": "Set dirty failed",
 
   "techjs.command.help.title": "TechJS Commands",
   "techjs.command.help.list": "/techjs list - List unlocked technologies (only shows operated/enabled ones)",

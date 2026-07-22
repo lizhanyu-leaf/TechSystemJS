@@ -8,9 +8,8 @@
     "minVersion": "0.5.2"
   },
   "mixins": [
-    "RecipeManagerAccessor",
     "RecipeManagerMixin",
-    "ReloadableServerResourcesAccessor"
+    "RecipesEventJSMixin"
   ],
   "client": [
     "StartEventObserverMixin"

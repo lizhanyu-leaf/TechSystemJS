@@ -9,7 +9,6 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = TechSystemJS.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ServerListener {
-
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
         TechSystemStorage storage = TechSystemStorage.getOrCreateInstance(event.getServer());

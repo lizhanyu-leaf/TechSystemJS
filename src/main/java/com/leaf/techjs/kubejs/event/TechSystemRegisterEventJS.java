@@ -80,7 +80,7 @@ public class TechSystemRegisterEventJS extends StartupEventJS {
             }
         }
 
-        TechSystemStorage.whenCreate(storage -> {
+        TechSystemStorage.whenCreateWithInstance(storage -> {
             for (var builder : builders) {
                 var techInfo = TechInfo.of(builder.id);
                 storage.addTech(techInfo);

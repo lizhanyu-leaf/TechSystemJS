@@ -1,7 +1,7 @@
 package com.leaf.techjs.context.items;
 
 import com.leaf.techjs.context.TechInfo;
-import com.leaf.techjs.context.TechSystem;
+import com.leaf.techjs.context.TechSystemManager;
 import com.leaf.techjs.context.TechSystemStorage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -47,7 +47,7 @@ public class TechUnlockerItem extends Item {
 
             server.getPlayerList().broadcastSystemMessage(message, false);
 
-            server.execute(() -> TechSystem.apply(server));
+            server.execute(() -> TechSystemManager.apply(server));
 
             player.setItemInHand(hand, ItemStack.EMPTY);
 

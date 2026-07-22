@@ -1,6 +1,6 @@
 package com.leaf.techjs.kubejs;
 
-import com.leaf.techjs.context.TechSystem;
+import com.leaf.techjs.context.TechSystemManager;
 import com.leaf.techjs.context.TechSystemStorage;
 import net.minecraft.server.MinecraftServer;
 
@@ -16,6 +16,6 @@ public class TechSystemTool {
     }
 
     public void applyTechnology(MinecraftServer server) {
-        TechSystem.apply(server);
+        TechSystemManager.apply(server);
     }
 }
