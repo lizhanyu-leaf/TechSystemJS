@@ -10,7 +10,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum CompatMods {
-    JEI("StartEventObserverMixin");
+    JEI()
+    ;
 
     private final String id;
     private final String[] mixins;

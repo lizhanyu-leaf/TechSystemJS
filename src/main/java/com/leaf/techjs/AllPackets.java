@@ -1,7 +1,7 @@
 package com.leaf.techjs;
 
 import com.leaf.techjs.foundation.SimplePacketBase;
-import com.leaf.techjs.jei.RestartJEIPacket;
+import com.leaf.techjs.foundation.UpdateTechPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -18,10 +18,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum AllPackets {
-    RESTART_JEI(RestartJEIPacket.class, RestartJEIPacket::new, NetworkDirection.PLAY_TO_CLIENT);
+    UPDATE_TECH(UpdateTechPacket.class, UpdateTechPacket::new, NetworkDirection.PLAY_TO_CLIENT),
+    ;
 
     public static final ResourceLocation CHANNEL_NAME;
-    public static final int NETWORK_VERSION = 3;
+    public static final int NETWORK_VERSION = 4;
     public static final String NETWORK_VERSION_STR;
     private static SimpleChannel channel;
     private final PacketType<?> packetType;
@@ -55,7 +56,7 @@ public enum AllPackets {
 
     static {
         CHANNEL_NAME = ResourceLocation.fromNamespaceAndPath(TechSystemJS.MOD_ID, "main");
-        NETWORK_VERSION_STR = String.valueOf(3);
+        NETWORK_VERSION_STR = String.valueOf(NETWORK_VERSION);
     }
 
     private static class PacketType<T extends SimplePacketBase> {

@@ -8,11 +8,10 @@
     "minVersion": "0.5.2"
   },
   "mixins": [
-    "RecipeManagerMixin",
+    "RecipeJSMixin",
     "RecipesEventJSMixin"
   ],
   "client": [
-    "StartEventObserverMixin"
   ],
   "injectors": {
     "defaultRequire": 1

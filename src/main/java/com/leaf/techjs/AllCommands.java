@@ -1,205 +1,90 @@
 package com.leaf.techjs;
 
-import com.leaf.techjs.commands.TechArgumentType;
-import com.leaf.techjs.context.TechInfo;
-import com.leaf.techjs.context.TechSystemManager;
-import com.leaf.techjs.context.TechSystemStorage;
-import com.leaf.techjs.kubejs.TechSystemEvents;
+import com.leaf.techjs.system.Tech;
+import com.leaf.techjs.system.TechManager;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * 测试指令（需要权限等级 2）：
+ * <pre>
+ * /techjs toggle &lt;tech&gt; &lt;true|false&gt;   切换科技启停（更新配方、同步客户端、触发 JS 事件）
+ * /techjs query &lt;tech&gt;                  查询科技状态
+ * /techjs list                          列出所有科技及状态
+ * </pre>
+ */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = TechSystemJS.MOD_ID)
 public final class AllCommands {
+
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         if (!AllConfig.enableCommands) return;
 
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
 
-        dispatcher.register(
-                Commands.literal("techjs")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.literal("reload_storage")
-                                .executes(ctx -> {
-                                                            CommandSourceStack src = ctx.getSource();
-                                                            TechSystemStorage storage = TechSystemStorage.getInstance();
-                                                            if (storage == null) {
-                                                                                                                            src.sendFailure(Component.translatable("techjs.command.reload_storage.not_ready").withStyle(ChatFormatting.RED));
-                                                                return 0;
-                                                                                                                        }
-                                                            storage.load();
-                                                            if (AllConfig.enableCommandsTips) {
-                                                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.reload_storage.success").withStyle(ChatFormatting.GREEN), true);
-                                                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.reload_storage.hint_apply").withStyle(ChatFormatting.GRAY), false);
-                                                            }
-                                                            return 1;
-                                                        }))
-                        .then(Commands.literal("unlock")
-                                .then(Commands.argument("tech_id", TechArgumentType.tech())
+        dispatcher.register(Commands.literal("techjs")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("toggle")
+                        .then(techArgument()
+                                .then(Commands.argument("enable", BoolArgumentType.bool())
                                         .executes(ctx -> {
-                                            TechInfo tech = TechArgumentType.getTech(ctx, "tech_id");
-                                            CommandSourceStack src = ctx.getSource();
-                                            TechSystemStorage storage = TechSystemStorage.getInstance();
-                                            if (tech == null) {
-                                                                                            src.sendFailure(Component.translatable("techjs.command.tech_not_found").withStyle(ChatFormatting.RED));
-                                                return 0;
-                                            }
-                                            if (storage == null) {
-                                                                                            src.sendFailure(Component.translatable("techjs.command.reload_storage.not_ready").withStyle(ChatFormatting.RED));
-                                                return 0;
-                                            }
-                                            if (storage.isActive(tech)) {
-                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.already_unlocked", tech.id.toString()).withStyle(ChatFormatting.YELLOW), true);
-                                                return 0;
-                                            }
-                                            storage.setActive(tech, true);
-                                            if (AllConfig.enableCommandsTips) {
-                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.unlocked", tech.id.toString()).withStyle(ChatFormatting.GREEN), true);
-                                            }
+                                            ResourceLocation id = getId(ctx, "tech");
+                                            boolean enable = BoolArgumentType.getBool(ctx, "enable");
+                                            TechManager.toggle(id, enable);
+                                            feedback(ctx.getSource(), "Tech " + id + " -> "
+                                                    + (enable ? "enabled" : "disabled"));
                                             return 1;
-                                        })))
-                        .then(Commands.literal("lock")
-                                .then(Commands.argument("tech_id", TechArgumentType.tech())
-                                        .executes(ctx -> {
-                                            TechInfo tech = TechArgumentType.getTech(ctx, "tech_id");
-                                            CommandSourceStack src = ctx.getSource();
-                                            TechSystemStorage storage = TechSystemStorage.getInstance();
-                                            if (tech == null) {
-                                                src.sendFailure(Component.translatable("techjs.command.tech_not_found").withStyle(ChatFormatting.RED));
-                                                return 0;
-                                            }
-                                            if (storage == null) {
-                                                src.sendFailure(Component.translatable("techjs.command.reload_storage.not_ready").withStyle(ChatFormatting.RED));
-                                                return 0;
-                                            }
-                                                                    boolean exists = storage.getAll().containsKey(tech);
-                                                                    if (!exists) {
-                                                                        // 不存在则添加为未激活
-                                                                        storage.setActive(tech, false);
-                                                                        if (AllConfig.enableCommandsTips) {
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.lock_added_hint", tech.id.toString()).withStyle(ChatFormatting.GREEN), true);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.reload_storage.hint_apply").withStyle(ChatFormatting.GRAY), false);
-                                                                        }
-                                                                        return 1;
-                                                                    }
-                                                                    if (!storage.isActive(tech)) {
-                                                                        src.sendSuccess(() -> Component.translatable("techjs.command.already_locked", tech.id.toString()).withStyle(ChatFormatting.YELLOW), true);
-                                                                        return 0;
-                                                                    }
-                                                                    storage.setActive(tech, false);
-                                                                    if (AllConfig.enableCommandsTips) {
-                                                                        src.sendSuccess(() -> Component.translatable("techjs.command.locked", tech.id.toString()).withStyle(ChatFormatting.GREEN), true);
-                                                                    }
-                                                                    return 1;
-                                                                })))
-                        .then(Commands.literal("need_apply")
-                                        .executes(ctx -> {
-                                            if (TechSystemManager.needsApply()) {
-                                                if (AllConfig.enableCommandsTips) {
-                                                    ctx.getSource().sendSuccess(() -> Component.translatable("techjs.command.set_dirty.fail").withStyle(ChatFormatting.GRAY), false);
-                                                    return 1;
-                                                }
-                                            }
-                                            TechSystemManager.setDirty();
-                                            return 0;
-                                        }))
-                        .then(Commands.literal("apply")
+                                        }))))
+                .then(Commands.literal("query")
+                        .then(techArgument()
                                 .executes(ctx -> {
-                                                            CommandSourceStack src = ctx.getSource();
-                                                            try {
-                                                                if (!TechSystemManager.needsApply()) {
-                                                                    if (AllConfig.enableCommandsTips) {
-                                                                                                                                        src.sendSuccess(() -> Component.translatable("techjs.command.apply.no_changes").withStyle(ChatFormatting.YELLOW), true);
-                                                                    }
-                                                                    return 0;
-                                                                }
-                                                                if (!TechSystemEvents.ON_TECH_LOAD.hasListeners()) {
-                                                                    if (AllConfig.enableCommandsTips) {
-                                                                        src.sendSuccess(() -> Component.translatable("techjs.command.apply.no_listener").withStyle(ChatFormatting.YELLOW), true);
-                                                                    }
-                                                                    return 0;
-                                                                }
-                                                                TechSystemManager.apply(src.getServer());
-                                                                if (AllConfig.enableCommandsTips) {
-                                                                                                                                    src.sendSuccess(() -> Component.translatable("techjs.command.apply.success").withStyle(ChatFormatting.GREEN), true);
-                                                                }
-                                                                return 1;
-                                                            } catch (Exception e) {
-                                                                src.sendFailure(Component.literal("应用失败: " + e.getMessage()).withStyle(ChatFormatting.RED));
-                                                                return 0;
-                                                            }
-                                                        }))
-                        .then(Commands.literal("list")
-                                .executes(ctx -> {
-                                                            CommandSourceStack src = ctx.getSource();
-                                                            TechSystemStorage storage = TechSystemStorage.getInstance();
-                                                            if (storage == null) {
-                                                                                                                            src.sendFailure(Component.translatable("techjs.command.reload_storage.not_ready").withStyle(ChatFormatting.RED));
-                                                                return 0;
-                                                            }
-                                                            var techs = storage.getAllActive();
-                                                            if (techs.isEmpty()) {
-                                                                                                                            if (AllConfig.enableCommandsTips) src.sendSuccess(() -> Component.translatable("techjs.command.list.none").withStyle(ChatFormatting.YELLOW), false);
-                                                                return 1;
-                                                            }
-                                                            if (AllConfig.enableCommandsTips) {
-                                                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.list.header", techs.size()).withStyle(ChatFormatting.AQUA), false);
-                                                                for (TechInfo tech : techs) {
-                                                                                                                                src.sendSuccess(() -> Component.translatable("techjs.command.list.item", tech.id.toString()).withStyle(ChatFormatting.GREEN), false);
-                                                                }
-                                                                // 额外提示：未被操作过的科技不会出现在列表中
-                                                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.list.note").withStyle(ChatFormatting.GRAY), false);
-                                                            }
-                                                            return 1;
-                                                        }))
-                        .then(Commands.literal("add_tech")
-                                .then(Commands.argument("tech_id", TechArgumentType.noSuggestions())
-                                        .executes(ctx -> {
-                                            CommandSourceStack src = ctx.getSource();
-                                            TechInfo tech = TechArgumentType.getTech(ctx, "tech_id");
-                                            TechSystemStorage storage = TechSystemStorage.getInstance();
-                                            if (tech == null) {
-                                                                                            src.sendFailure(Component.translatable("techjs.command.tech_not_found").withStyle(ChatFormatting.RED));
-                                                return 0;
-                                            }
-                                            if (storage == null) {
-                                                                                            src.sendFailure(Component.translatable("techjs.command.reload_storage.not_ready").withStyle(ChatFormatting.RED));
-                                                return 0;
-                                            }
-                                            boolean exists = storage.getAll().containsKey(tech);
-                                            if (exists) {
-                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.exists", tech.id.toString()).withStyle(ChatFormatting.YELLOW), true);
-                                                return 0;
-                                            }
-                                            storage.setActive(tech, false);
-                                            storage.save();
-                                            if (AllConfig.enableCommandsTips) {
-                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.added", tech.id.toString()).withStyle(ChatFormatting.GREEN), true);
-                                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.reload_storage.hint_apply").withStyle(ChatFormatting.GRAY), false);
-                                            }
-                                            return 1;
-                                        })))
-                        .then(Commands.literal("help")
-                                .executes(ctx -> {
-                                    CommandSourceStack src = ctx.getSource();
-                                    if (AllConfig.enableCommandsTips) {
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.title").withStyle(ChatFormatting.GOLD), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.list").withStyle(ChatFormatting.AQUA), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.lock").withStyle(ChatFormatting.YELLOW), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.unlock").withStyle(ChatFormatting.GREEN), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.add_tech").withStyle(ChatFormatting.GREEN), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.reload_storage").withStyle(ChatFormatting.GRAY), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.apply").withStyle(ChatFormatting.GRAY), false);
-                                                                            src.sendSuccess(() -> Component.translatable("techjs.command.help.note").withStyle(ChatFormatting.GRAY), false);
-                                    }
+                                    ResourceLocation id = getId(ctx, "tech");
+                                    Tech tech = TechManager.getTech(id);
+                                    feedback(ctx.getSource(), "Tech " + id + " is "
+                                            + (TechManager.isEnable(id) ? "enabled" : "disabled")
+                                            + (tech == null ? " (未注册)" : ""));
                                     return 1;
-                                }))
-        );
+                                })))
+                .then(Commands.literal("list")
+                        .executes(ctx -> {
+                            StringBuilder sb = new StringBuilder("Techs:");
+                            TechManager.getAllTechIds().forEach(id -> sb.append('\n').append("  ").append(id)
+                                    .append(" = ").append(TechManager.isEnable(id) ? "enabled" : "disabled"));
+                            feedback(ctx.getSource(), sb.toString());
+                            return 1;
+                        })));
+    }
+
+    private static RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> techArgument() {
+        return Commands.argument("tech", ResourceLocationArgument.id())
+                .suggests(AllCommands::suggestTechs);
+    }
+
+    private static CompletableFuture<Suggestions> suggestTechs(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
+        TechManager.getAllTechIds().forEach(id -> builder.suggest(id.toString()));
+        return builder.buildFuture();
+    }
+
+    private static ResourceLocation getId(CommandContext<CommandSourceStack> ctx, String name) {
+        return ResourceLocationArgument.getId(ctx, name);
+    }
+
+    private static void feedback(CommandSourceStack source, String message) {
+        if (!AllConfig.commandOutput) return;
+        source.sendSuccess(() -> Component.literal("[TechSystemJS] " + message), true);
     }
 }

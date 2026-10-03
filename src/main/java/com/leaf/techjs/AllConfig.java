@@ -1,6 +1,5 @@
 package com.leaf.techjs;
 
-import com.leaf.techjs.context.TechSystemManager;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -13,6 +12,12 @@ public final class AllConfig {
     public static final ForgeConfigSpec SPEC;
     public static final Common COMMON;
 
+    /** 是否注册 /techjs 指令（onLoad 时从配置缓存） */
+    public static boolean enableCommands = true;
+
+    /** 指令执行后是否输出反馈消息（onLoad 时从配置缓存） */
+    public static boolean commandOutput = true;
+
     static {
         var pair = BUILDER.configure(Common::new);
         SPEC = pair.getRight();
@@ -20,32 +25,24 @@ public final class AllConfig {
     }
 
     public static class Common {
-        public final ForgeConfigSpec.LongValue RESTART_DELAY;
-        public final ForgeConfigSpec.BooleanValue ENABLE_COMMANDS;
-        public final ForgeConfigSpec.BooleanValue ENABLE_COMMANDS_TIPS;
+
+        private final ForgeConfigSpec.BooleanValue enableCommandsValue;
+        private final ForgeConfigSpec.BooleanValue commandOutputValue;
 
         private Common(ForgeConfigSpec.Builder builder) {
-            RESTART_DELAY = builder.comment("科技系统重启延迟（毫秒）")
-                    .defineInRange("restartDelay", 2000, 50, Long.MAX_VALUE);
-
-            ENABLE_COMMANDS = builder.comment("是否启用科技系统命令")
+            enableCommandsValue = builder
+                    .comment("是否注册 /techjs 指令")
                     .define("enableCommands", true);
 
-            ENABLE_COMMANDS_TIPS = builder.comment("是否启用科技系统命令提示")
-                    .define("enableCommandsTips", true);
+            commandOutputValue = builder
+                    .comment("指令执行后是否输出反馈消息")
+                    .define("commandOutput", true);
         }
     }
 
-    public static long restartDelay;
-    public static boolean enableCommands;
-    public static boolean enableCommandsTips;
-
     @SubscribeEvent
     public static void onLoad(ModConfigEvent event) {
-        restartDelay = COMMON.RESTART_DELAY.get();
-        enableCommands = COMMON.ENABLE_COMMANDS.get();
-        enableCommandsTips = COMMON.ENABLE_COMMANDS_TIPS.get();
-
-        TechSystemManager.init();
+        enableCommands = COMMON.enableCommandsValue.get();
+        commandOutput = COMMON.commandOutputValue.get();
     }
 }

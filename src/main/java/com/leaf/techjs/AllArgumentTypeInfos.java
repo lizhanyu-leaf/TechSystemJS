@@ -1,7 +1,5 @@
 package com.leaf.techjs;
 
-import com.leaf.techjs.commands.TechArgumentType;
-import com.leaf.techjs.commands.TechArgumentTypeInfo;
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
@@ -10,7 +8,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public enum AllArgumentTypeInfos {
-    TECH("tech", TechArgumentType.class, new TechArgumentTypeInfo());
+    ;
 
     private final String id;
     private final Class<? extends ArgumentType<?>> clazz;

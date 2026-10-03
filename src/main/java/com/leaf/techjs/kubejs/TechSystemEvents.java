@@ -1,31 +1,38 @@
 package com.leaf.techjs.kubejs;
 
-import com.leaf.techjs.context.TechInfo;
-import com.leaf.techjs.kubejs.event.TechSystemRegisterEventJS;
+import com.leaf.techjs.kubejs.event.RegisterTechEventJS;
+import com.leaf.techjs.kubejs.event.TechEventJS;
+import com.leaf.techjs.kubejs.event.TechJEIEventJS;
 import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.event.Extra;
-import dev.latvian.mods.kubejs.recipe.RecipesEventJS;
+import dev.latvian.mods.kubejs.script.ScriptType;
+import dev.latvian.mods.kubejs.script.ScriptTypePredicate;
 
 public interface TechSystemEvents {
-    EventGroup GROUP = EventGroup.of("TechSystemEvents");
+    EventGroup GROUP = EventGroup.of("TechEvents");
 
-    Extra SUPPORTS_TECHNOLOGY = new Extra()
-            .transformer(TechSystemEvents::transformTech).toString(obj -> ((TechInfo) obj).id)
-            .identity().describeType(ctx -> ctx.javaType(TechInfo.class));
+    /**
+     * onTechEnable / onTechDisable 在 server script 与 client script 中均可监听
+     * （server 端事件发给 server script，client 端事件发给 client script），但 startup script 不行
+     */
+    ScriptTypePredicate SERVER_OR_CLIENT = type -> type == ScriptType.SERVER || type == ScriptType.CLIENT;
 
-    private static TechInfo transformTech(Object obj) {
-        if (obj == null) return TechInfo.EMPTY;
-        if (obj instanceof TechInfo)
-            return (TechInfo) obj;
-        if (obj instanceof String)
-            return TechInfo.of((String) obj);
-        return TechInfo.EMPTY;
-    }
+    /** 监听时必须指明 Tech 的 ResourceLocation：TechEvents.onTechEnable('techjs:xxx', event => {...}) */
+    Extra REQUIRES_TECH = Extra.REQUIRES_ID;
 
-    EventHandler ON_TECH_LOAD
-            = GROUP.server("onTechLoad", () -> RecipesEventJS.class).extra(SUPPORTS_TECHNOLOGY);
+    EventHandler ON_TECH_ENABLE
+            = GROUP.add("onTechEnable", SERVER_OR_CLIENT, () -> TechEventJS.class).extra(REQUIRES_TECH);
 
-    EventHandler REGISTER_TECH
-            = GROUP.startup("registerTech", () -> TechSystemRegisterEventJS.class);
+    EventHandler ON_TECH_DISABLE
+            = GROUP.add("onTechDisable", SERVER_OR_CLIENT, () -> TechEventJS.class).extra(REQUIRES_TECH);
+
+    /** 安装 JEI 时在客户端额外触发，event 提供 jeiRuntime */
+    EventHandler ON_TECH_ENABLE_WITH_JEI
+            = GROUP.add("onTechEnableWithJEI", SERVER_OR_CLIENT, () -> TechJEIEventJS.class).extra(REQUIRES_TECH);
+
+    EventHandler ON_TECH_DISABLE_WITH_JEI
+            = GROUP.add("onTechDisableWithJEI", SERVER_OR_CLIENT, () -> TechJEIEventJS.class).extra(REQUIRES_TECH);
+
+    EventHandler REGISTER = GROUP.server("registerTech", () -> RegisterTechEventJS.class);
 }

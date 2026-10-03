@@ -1,52 +1,58 @@
 package com.leaf.techjs.mixin;
 
-import com.google.common.base.Stopwatch;
-import com.leaf.techjs.TechSystemJS;
-import com.leaf.techjs.context.TechSystemStorage;
-import com.leaf.techjs.kubejs.TechSystemEvents;
+import com.google.gson.JsonElement;
+import com.leaf.techjs.system.TechRecipeHolder;
+import com.leaf.techjs.system.TechRecipeManager;
+import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.RecipesEventJS;
-import dev.latvian.mods.kubejs.script.ScriptType;
-import dev.latvian.mods.kubejs.util.ConsoleJS;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(RecipesEventJS.class)
-public class RecipesEventJSMixin {
-    @Inject(method = "post",
-        remap = false,
-        at = @At(
-                value = "INVOKE",
-                target = "Ldev/latvian/mods/kubejs/event/EventHandler;post(Ldev/latvian/mods/kubejs/script/ScriptTypeHolder;Ldev/latvian/mods/kubejs/event/EventJS;)Ldev/latvian/mods/kubejs/event/EventResult;",
-                shift = At.Shift.AFTER))
-    private void afterRecipesEvent(CallbackInfo ci) {
-        RecipesEventJS instance = (RecipesEventJS) (Object) this;
-        TechSystemJS.LOGGER.info("TechSystemJS : TechSystem Loaded");
+import java.util.Iterator;
+import java.util.Map;
 
-        if (TechSystemStorage.getInstance() == null) return;
-        TechSystemStorage storage = TechSystemStorage.getInstance();
+/**
+ * 有 tech 的 RecipeJS 统一收集到 TechRecipeManager.techRecipes：
+ * 未启用的科技从 addedRecipes 与配方管理器中移除；已启用的保持原样
+ */
+@Mixin(value = RecipesEventJS.class, remap = false)
+public abstract class RecipesEventJSMixin {
 
-        // 创建计时器
-        var techTimer = Stopwatch.createStarted();
+    @Inject(method = "post(Lnet/minecraft/world/item/crafting/RecipeManager;Ljava/util/Map;)V",
+            at = @At("HEAD"), remap = false)
+    private void techjs$resetTechRecipes(RecipeManager manager, Map<ResourceLocation, JsonElement> datapackRecipeMap, CallbackInfo ci) {
+        TechRecipeManager.reset();
+    }
 
-        // 获取所有启用科技
-        var activeTechs = storage.getAllActive();
-        ConsoleJS.SERVER.info("Posting tech recipes event...");
+    @Inject(method = "post(Lnet/minecraft/world/item/crafting/RecipeManager;Ljava/util/Map;)V",
+            at = @At("TAIL"), remap = false)
+    private void techjs$divertTechRecipes(RecipeManager manager, Map<ResourceLocation, JsonElement> datapackRecipeMap, CallbackInfo ci) {
+        // .tech(...) 是在配方创建（并加入 addedRecipes）之后链式调用的，所以要等脚本全部跑完再统一收集。
+        // 此时 post 已把 addedRecipes 合并进 RecipeManager，按当前启用状态处理：
+        //  - 未启用：从 addedRecipes 与配方管理器中移除。reload 前由 toggle 时双端各自配合增删，
+        //    reload 后配方重建时在这里按持久化状态重建，再由原版配方包强制双端同步，不容易出 bug
+        //  - 已启用：不移除，随 post 正常进入配方管理器
+        RecipesEventJS self = (RecipesEventJS) (Object) this;
+        Iterator<RecipeJS> iterator = self.addedRecipes.iterator();
+        while (iterator.hasNext()) {
+            RecipeJS recipe = iterator.next();
+            ResourceLocation tech = TechRecipeHolder.getTech(recipe);
+            if (tech == null) continue;
 
-        // 遍历所有启用科技
-        for (var techInfo : activeTechs) {
-            // 检查是否有对应监听
-            if (!TechSystemEvents.ON_TECH_LOAD.hasListeners(techInfo)) {
-                ConsoleJS.SERVER.debug("Skipping " + techInfo.id + " (no listeners)");
+            Recipe<?> vanilla = recipe.createRecipe();
+            if (vanilla == null) {
+                iterator.remove();
                 continue;
             }
 
-            // 触发事件
-            ConsoleJS.SERVER.debug("Posting tech recipes event for " + techInfo.id);
-            TechSystemEvents.ON_TECH_LOAD.post(
-                    ScriptType.SERVER, techInfo, instance);
+            if (TechRecipeManager.divert(tech, vanilla, manager)) {
+                iterator.remove();
+            }
         }
-        ConsoleJS.SERVER.info("Posted tech recipes event in " + techTimer.stop());
     }
 }
